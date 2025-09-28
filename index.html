@@ -10,55 +10,159 @@
     .gif-container{position:relative;width:600px;height:400px;overflow:hidden;border-radius:16px;box-shadow:0 0 20px rgba(0,0,0,0.5);}
     .gif-container img{width:100%;height:100%;object-fit:cover;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-    #playButton{background:#f1c40f;color:#000;border:none;padding:10px 20px;font-size:16px;border-radius:5px;cursor:pointer;margin-top:20px;}
+    #audio-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #f1c40f;
+      color: #000;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 1000;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #overlay-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 80%;
+    }
+    #start-button {
+      background: #f1c40f;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    #soundcloud-container {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
+  <div id="overlay">
+    <div id="overlay-content">
+      <h2>Witaj na stronie Dawida Musztardy!</h2>
+      <p>Kliknij przycisk poniżej, aby rozpocząć odtwarzanie muzyki</p>
+      <button id="start-button">Rozpocznij</button>
+    </div>
+  </div>
+
   <h1>Dawid Musztarda</h1>
   <div class="gif-container">
     <img src="musz.gif" alt="Dawid Musztarda GIF">
   </div>
 
-  <!-- Kontener na widget SoundCloud -->
-  <div id="soundcloud-player"></div>
-  <button id="playButton">Odtwórz muzykę</button>
+  <div id="soundcloud-container">
+    <!-- Odtwarzacz SoundCloud -->
+    <iframe id="soundcloud-player" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/matheus-albuquerque-13/megadeth-symphony-of-destruction&color=%23ff5500&inverse=false&auto_play=true&show_user=true"></iframe>
+  </div>
 
-  <!-- Skrypt dla SoundCloud Widget API -->
-  <script src="https://w.soundcloud.com/player/api.js"></script>
+  <!-- Przycisk kontroli dźwięku -->
+  <button id="audio-toggle" class="hidden">🔇</button>
+
   <script>
-    // Inicjalizacja widgetu
-    var widgetIframe = document.getElementById('soundcloud-player'),
-        widget       = SC.Widget(widgetIframe),
-        playButton   = document.getElementById('playButton');
-
-    // Ukryjemy początkowo widget, bo nie chcemy go pokazywać
-    widgetIframe.style.display = 'none';
-
-    // Konfiguracja widgetu
-    SC.initialize({
-      client_id: 'YOUR_CLIENT_ID' // Potrzebujemy client_id, ale dla embed nie jest wymagane, jednak do kontroli przez API może być potrzebne.
+    // Pobieramy elementy
+    const overlay = document.getElementById('overlay');
+    const startButton = document.getElementById('start-button');
+    const audioToggle = document.getElementById('audio-toggle');
+    const soundcloudPlayer = document.getElementById('soundcloud-player');
+    
+    // Zmienna do przechowywania widgetu SoundCloud
+    let widget;
+    
+    // Inicjalizacja widgetu SoundCloud po załadowaniu strony
+    window.addEventListener('load', function() {
+      // Tworzymy widget SoundCloud
+      widget = SC.Widget(soundcloudPlayer);
+      
+      // Nasłuchujemy zdarzenia gotowości
+      widget.bind(SC.Widget.Events.READY, function() {
+        console.log('Widget SoundCloud gotowy');
+        
+        // Próbujemy odtworzyć muzykę po 1 sekundzie
+        setTimeout(function() {
+          widget.play();
+          console.log('Próba odtworzenia muzyki');
+        }, 1000);
+      });
+      
+      // Nasłuchujemy zdarzenia odtwarzania
+      widget.bind(SC.Widget.Events.PLAY, function() {
+        console.log('Muzyka odtwarzana');
+        audioToggle.textContent = '🔊';
+        audioToggle.classList.remove('hidden');
+      });
+      
+      // Nasłuchujemy zdarzenia pauzy
+      widget.bind(SC.Widget.Events.PAUSE, function() {
+        console.log('Muzyka zatrzymana');
+        audioToggle.textContent = '🔇';
+      });
     });
-
-    // Widget zostanie załadowany z podanym URL
-    widget.load("https://soundcloud.com/matheus-albuquerque-13/megadeth-symphony-of-destruction", {
-      auto_play: false,
-      buying: false,
-      liking: false,
-      download: false,
-      sharing: false,
-      show_artwork: false,
-      show_comments: false,
-      show_playcount: false,
-      show_user: false,
-      hide_related: true
+    
+    // Obsługa przycisku start
+    startButton.addEventListener('click', function() {
+      // Ukrywamy overlay
+      overlay.classList.add('hidden');
+      
+      // Próbujemy uruchomić muzykę
+      if (widget) {
+        widget.play();
+      }
     });
-
-    // Po kliknięciu przycisku, odtwarzaj
-    playButton.addEventListener('click', function() {
-      widget.play();
-      // Możemy też ukryć przycisk po kliknięciu, jeśli chcemy
-      playButton.style.display = 'none';
+    
+    // Obsługa przycisku kontroli dźwięku
+    audioToggle.addEventListener('click', function() {
+      if (widget) {
+        widget.getPosition(function(position) {
+          // Jeśli pozycja jest większa niż 0, to muzyka jest odtwarzana
+          if (position > 0) {
+            widget.pause();
+          } else {
+            widget.play();
+          }
+        });
+      }
     });
+    
+    // Dodajemy nasłuchiwanie na interakcję z dokumentem
+    document.addEventListener('click', function() {
+      // Po pierwszym kliknięciu próbujemy uruchomić muzykę
+      if (widget && overlay.classList.contains('hidden')) {
+        widget.play();
+      }
+    });
+    
+    // Ładujemy API SoundCloud
+    (function() {
+      var script = document.createElement('script');
+      script.src = 'https://w.soundcloud.com/player/api.js';
+      document.head.appendChild(script);
+    })();
   </script>
 </body>
 </html>
