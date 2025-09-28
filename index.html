@@ -10,7 +10,6 @@
     .gif-container{position:relative;width:600px;height:400px;overflow:hidden;border-radius:16px;box-shadow:0 0 20px rgba(0,0,0,0.5);}
     .gif-container img{width:100%;height:100%;object-fit:cover;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-    #playHint{position:absolute;top:20px;left:20px;color:#fff;z-index:3;padding:10px 14px;background:rgba(0,0,0,0.5);border-radius:8px;cursor:pointer;}
   </style>
 </head>
 <body>
@@ -19,18 +18,10 @@
     <img src="musz.gif" alt="Dawid Musztarda GIF">
   </div>
 
-  <div id="playHint">Kliknij tutaj, aby włączyć muzykę</div>
-
-  <script>
-    const hint = document.getElementById('playHint');
-    hint.addEventListener('click', ()=>{
-      const audio = document.createElement('audio');
-      audio.src = 'https://api.soundcloud.com/tracks/1479061417/stream?client_id=2t9loNQH90kzJcsFCODdigxfp325aq4z'; // SoundCloud stream URL
-      audio.autoplay = true;
-      audio.loop = true;
-      document.body.appendChild(audio);
-      hint.style.display='none';
-    });
-  </script>
+  <!-- Legalna muzyka w tle -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/02/22/audio_12345abcdef.mp3?filename=happy-rock-loop-110565.mp3" type="audio/mpeg">
+    Twój przeglądarka nie wspiera odtwarzania audio.
+  </audio>
 </body>
 </html>
