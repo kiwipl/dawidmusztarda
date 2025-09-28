@@ -10,6 +10,7 @@
     .gif-container{position:relative;width:600px;height:400px;overflow:hidden;border-radius:16px;box-shadow:0 0 20px rgba(0,0,0,0.5);}
     .gif-container img{width:100%;height:100%;object-fit:cover;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    #playButton{background:#f1c40f;color:#000;border:none;padding:10px 20px;font-size:16px;border-radius:5px;cursor:pointer;margin-top:20px;}
   </style>
 </head>
 <body>
@@ -18,7 +19,46 @@
     <img src="musz.gif" alt="Dawid Musztarda GIF">
   </div>
 
-  <!-- Odtwarzacz SoundCloud -->
-  <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/matheus-albuquerque-13/megadeth-symphony-of-destruction&color=%23ff5500&inverse=false&auto_play=false&show_user=true"></iframe>
+  <!-- Kontener na widget SoundCloud -->
+  <div id="soundcloud-player"></div>
+  <button id="playButton">Odtwórz muzykę</button>
+
+  <!-- Skrypt dla SoundCloud Widget API -->
+  <script src="https://w.soundcloud.com/player/api.js"></script>
+  <script>
+    // Inicjalizacja widgetu
+    var widgetIframe = document.getElementById('soundcloud-player'),
+        widget       = SC.Widget(widgetIframe),
+        playButton   = document.getElementById('playButton');
+
+    // Ukryjemy początkowo widget, bo nie chcemy go pokazywać
+    widgetIframe.style.display = 'none';
+
+    // Konfiguracja widgetu
+    SC.initialize({
+      client_id: 'YOUR_CLIENT_ID' // Potrzebujemy client_id, ale dla embed nie jest wymagane, jednak do kontroli przez API może być potrzebne.
+    });
+
+    // Widget zostanie załadowany z podanym URL
+    widget.load("https://soundcloud.com/matheus-albuquerque-13/megadeth-symphony-of-destruction", {
+      auto_play: false,
+      buying: false,
+      liking: false,
+      download: false,
+      sharing: false,
+      show_artwork: false,
+      show_comments: false,
+      show_playcount: false,
+      show_user: false,
+      hide_related: true
+    });
+
+    // Po kliknięciu przycisku, odtwarzaj
+    playButton.addEventListener('click', function() {
+      widget.play();
+      // Możemy też ukryć przycisk po kliknięciu, jeśli chcemy
+      playButton.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
